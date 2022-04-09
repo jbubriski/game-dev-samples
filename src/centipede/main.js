@@ -1,0 +1,334 @@
+window.requestAnimFrame = (function(callback){
+    return window.requestAnimationFrame ||
+		window.webkitRequestAnimationFrame ||
+		window.mozRequestAnimationFrame ||
+		window.oRequestAnimationFrame ||
+		window.msRequestAnimationFrame ||
+		function(callback){
+			window.setTimeout(callback, 1000 / 60);
+		};
+})();
+
+var centipedeSegmentDistance = 20;
+
+(function($) {
+	$(function() {
+		var $canvas = $('#uxCanvas');
+		var lasers = [];
+		var turret = { x: 300, y: 540 };
+		var centipedes = [];
+
+		centipedes.push(createCentipede());
+
+		$canvas.on('click', function (e) {
+			lasers[lasers.length] = addLaser(turret, { x: e.offsetX, y: e.offsetY });
+		});
+
+		$canvas.on('mousemove', function (e) {
+			turret.targetX = e.offsetX;
+			turret.targetY = e.offsetY;
+		});
+
+		$canvas.on('onselectstart', function () { return false; });
+
+		draw(lasers, turret, centipedes);
+
+		// Create the centipede
+		function createCentipede() {
+			var centipede = {
+				speed: 2,
+				direction: 1,
+				yTarget: 0,
+				position: {
+					x: 20, y: 20
+				},
+				segments: []
+			};
+
+			addSegments(centipede, 8);
+
+			return centipede;
+		}
+
+		// Create the centipede segments
+		function addSegments(centipede, count) {
+			let position = centipede.position;
+			centipede.segments = [];
+			let xPosition = position.x;
+
+			// create the segments and add them to a list
+			for (let i = 0; i <= count; i++) {
+				// Each new segment
+				xPosition -= centipedeSegmentDistance;
+
+				centipede.segments.push({
+					gridRow: 0,
+					position: {
+						x: xPosition,
+						y: position.y
+					}
+				});
+			}
+		}
+
+		function draw(lasers, turret, centipedes) {
+			var canvas = document.getElementById("uxCanvas");
+			var context = canvas.getContext("2d");
+			var leftEdge = 20;
+			var rightEdge = canvas.width - 20;
+			var bottomEdge = canvas.height;
+
+			var gridStart = 20;
+			var gridSize = 50;
+
+			context.clearRect(0, 0, canvas.width, canvas.height);
+
+			drawTurret(context, turret);
+
+			// Lasers
+			for (var i = 0; i < lasers.length; i++)
+			{
+				var laser = lasers[i];
+
+				drawLaser(context, laser, 10);
+
+				// Move lasers
+				lasers[i].x += laser.run;
+				lasers[i].y += laser.rise;
+
+				// Uh...?
+				if(lasers[i].x >= canvas.width || lasers[i].x <= 0)
+				{
+				}
+
+				if(lasers[i].y >= canvas.height || lasers[i].y <= 0)
+				{
+				}
+			}
+
+			// Centipedes
+			for (let i = 0; i < centipedes.length; i++)
+			{
+				let centipede = centipedes[i];
+
+				if (!centipede)
+					continue;
+
+				// Draw centipede
+				drawCentipede(context, centipede);
+
+				// Off the screen?
+				if (centipede.position.y > bottomEdge)
+				{
+					centipedes[i] = createCentipede();
+				}
+
+				// Change direction?
+				if (centipede.yTarget == 0) {
+					if (centipede.direction > 0 && centipede.position.x >= rightEdge) {
+						centipede.direction = -1;
+						centipede.yTarget = gridSize;
+					} else if (centipede.direction < 0 && centipede.position.x <= leftEdge) {
+						centipede.direction = 1;
+						centipede.yTarget = gridSize;
+					}
+				}
+
+				// Move centipede
+				if (centipede.yTarget > 0) {
+					centipede.position.y += centipede.speed;
+					centipede.yTarget -= centipede.speed;
+				} else if (centipede.direction > 0) {
+					centipede.position.x += centipede.speed;
+				} else {
+					centipede.position.x -= centipede.speed;
+				}
+
+				// Move segments
+				// We don't really move the segments, we just set their position
+				// based on where the next segment (or head) is
+				// var segmentDirection = centipede.direction * -1;
+				// var lastPosition = centipede.position;
+
+				for (let i = 0; i < centipede.segments.length; i++) {
+					var centipedeSegment = centipede.segments[i];
+
+					// Are we at the target x position?
+					if (!centipedeSegment.movingDown
+						&& centipedeSegment.gridRow % 2 == 0
+						&& centipedeSegment.position.x >= rightEdge) {
+						centipedeSegment.movingDown = true;
+					} else if (!centipedeSegment.movingDown
+						&& centipedeSegment.gridRow % 2 == 1
+						&& centipedeSegment.position.x <= leftEdge) {
+						centipedeSegment.movingDown = true;
+					}
+
+					if (centipedeSegment.movingDown) {
+						centipedeSegment.position.y += centipede.speed;
+
+						if (centipedeSegment.position.y >= gridStart + (gridSize * (centipedeSegment.gridRow + 1))) {
+							centipedeSegment.movingDown = false;
+							centipedeSegment.gridRow++;
+						}
+					} else {
+						if (centipedeSegment.gridRow % 2 == 0) {
+							centipedeSegment.position.x += centipede.speed;
+						} else {
+							centipedeSegment.position.x -= centipede.speed;
+						}
+					}
+
+					// if (centipedeSegment.movingDown
+
+					// }
+
+					if (i == 0) {
+						console.log(centipedeSegment.position);
+					}
+
+					// if (yDiff > 0) {
+					// 	centipedeSegment.position.y++;
+					// } else if (yDiff < 0) {
+					// 	centipedeSegment.position.y--;
+					// }
+
+					// var newPosition = {
+					// 	x: centipede.yTarget > 0
+					// 		? centipede.position.x
+					// 		: centipede.position.x + (segmentDirection * 20),
+					// 	y: centipede.yTarget > 0
+					// 		? centipede.position.y - centipede.yTarget
+					// 		: centipede.position.y
+					// };
+					// var newPosition = {
+					// 	x: lastPosition.x + (segmentDirection * 20),
+					// 	y: lastPosition.y
+					// };
+
+					// if (newPosition.x > rightEdge) {
+					// 	newPosition.y = lastPosition.y - (newPosition.x - rightEdge);
+					// 	newPosition.x = rightEdge;
+					// } else if (newPosition.x < leftEdge) {
+					// 	newPosition.y = lastPosition.y - (leftEdge - newPosition.x);
+					// 	newPosition.x = rightEdge;
+					// }
+
+					// lastPosition = newPosition;
+
+					// if () {
+					// 	segmentDirection *= 1;
+					// }
+
+
+
+					// if (centipedeSegment.position.y == centipede.position.y) {
+					// 	// On the same horizontal line
+					// 	// Now which way to move?
+					// 	if (centipedeSegment.position.x < centipede.position.x) {
+					// 		centipedeSegment.position.x += 1;
+					// 	} else {
+					// 		centipedeSegment.position.x -= 1;
+					// 	}
+					// } else {
+					// 	// Assuming the centipede only moves down
+					// 	if (centipedeSegment.position.x != centipede.position.x) {
+					// 		centipedeSegment.position.x += Math.sign(centipede.position.x - centipedeSegment.position.x);
+					// 	} else {
+					// 		centipedeSegment.position.y += 1;
+					// 	}
+					// }
+				}
+			}
+
+			requestAnimFrame(function(){
+				draw(lasers, turret, centipedes);
+			});
+		}
+
+		function addLaser(center, target) {
+			var slope = pointsToSlope(center, target);
+
+			return {
+				x: center.x,
+				y: center.y,
+				run: slope.run,
+				rise: slope.rise,
+			};
+		}
+
+		function drawTurret (context, turret) {
+			var target = { x: turret.targetX, y: turret.targetY };
+			var slope = pointsToSlope(turret, target);
+
+			turret.run = slope.run;
+			turret.rise = slope.rise;
+
+			drawCircle(context, turret, 10);
+			drawLine(context, turret, 10);
+		}
+
+		function drawLaser (context, laser, length) {
+			drawLine(context, laser, length);
+		}
+
+		function drawCentipede(context, centipede) {
+			drawCircle(context, centipede.position, 5);
+
+			for (let i = 0; i < centipede.segments.length; i++) {
+				drawCircle(context, centipede.segments[i].position, 2);
+			}
+		}
+
+		function drawCircle (context, location, radius) {
+			context.beginPath();
+			context.arc(location.x, location.y, radius, 0, 2 * Math.PI, false);
+			context.fillStyle = "#8ED6FF";
+			context.fill();
+			context.lineWidth = 5;
+			context.strokeStyle = "black";
+			context.stroke();
+		}
+
+		function drawLine (context, vector, length) {
+			context.lineWidth = 1;
+			context.moveTo(vector.x, vector.y);
+
+			var to = {};
+			to.x = vector.x + vector.run * length;
+			to.y = vector.y + vector.rise * length;
+
+			context.lineTo(to.x, to.y);
+			context.stroke();
+		}
+
+		/////////////////////////////////////////////////
+		// Math Functions
+		/////////////////////////////////////////////////
+		function pointsToSlope (pointA, pointB)
+		{
+			var angle = deltaToAngle(pointB.y - pointA.y, pointB.x - pointA.x);
+
+			var slope = {};
+
+			slope.run = Math.cos(angle * Math.PI / 180);
+			slope.rise = Math.sin(angle * Math.PI / 180);
+
+			if (pointA.x > pointB.x)
+				slope.run *= -1;
+
+			if (pointA.x > pointB.x)
+				slope.rise *= -1;
+
+			return slope;
+		}
+
+		function deltaToAngle (yDelta, xDelta) {
+			return Math.atan(yDelta / xDelta) * 180 / Math.PI;
+		}
+
+		function toSlope (angle) {
+			return Math.sin(angle);
+		}
+	});
+})(jQuery);
