@@ -178,66 +178,6 @@ var centipedeSegmentDistance = 20;
 							centipedeSegment.position.x -= centipede.speed;
 						}
 					}
-
-					// if (centipedeSegment.movingDown
-
-					// }
-
-					if (i == 0) {
-						console.log(centipedeSegment.position);
-					}
-
-					// if (yDiff > 0) {
-					// 	centipedeSegment.position.y++;
-					// } else if (yDiff < 0) {
-					// 	centipedeSegment.position.y--;
-					// }
-
-					// var newPosition = {
-					// 	x: centipede.yTarget > 0
-					// 		? centipede.position.x
-					// 		: centipede.position.x + (segmentDirection * 20),
-					// 	y: centipede.yTarget > 0
-					// 		? centipede.position.y - centipede.yTarget
-					// 		: centipede.position.y
-					// };
-					// var newPosition = {
-					// 	x: lastPosition.x + (segmentDirection * 20),
-					// 	y: lastPosition.y
-					// };
-
-					// if (newPosition.x > rightEdge) {
-					// 	newPosition.y = lastPosition.y - (newPosition.x - rightEdge);
-					// 	newPosition.x = rightEdge;
-					// } else if (newPosition.x < leftEdge) {
-					// 	newPosition.y = lastPosition.y - (leftEdge - newPosition.x);
-					// 	newPosition.x = rightEdge;
-					// }
-
-					// lastPosition = newPosition;
-
-					// if () {
-					// 	segmentDirection *= 1;
-					// }
-
-
-
-					// if (centipedeSegment.position.y == centipede.position.y) {
-					// 	// On the same horizontal line
-					// 	// Now which way to move?
-					// 	if (centipedeSegment.position.x < centipede.position.x) {
-					// 		centipedeSegment.position.x += 1;
-					// 	} else {
-					// 		centipedeSegment.position.x -= 1;
-					// 	}
-					// } else {
-					// 	// Assuming the centipede only moves down
-					// 	if (centipedeSegment.position.x != centipede.position.x) {
-					// 		centipedeSegment.position.x += Math.sign(centipede.position.x - centipedeSegment.position.x);
-					// 	} else {
-					// 		centipedeSegment.position.y += 1;
-					// 	}
-					// }
 				}
 			}
 
